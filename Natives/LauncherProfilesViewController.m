@@ -76,8 +76,10 @@ typedef NS_ENUM(NSUInteger, LauncherProfilesTableSection) {
             }]
     ]];
     self.createButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAdd menu:createMenu];
-    if(@available(iOS 19.0, *)) {
-        self.createButtonItem.sharesBackground = NO;
+    // "sharesBackground" only exists in the iOS 26 SDK. Setting it by name keeps this compiling
+    // with older SDKs (Xcode 16 on the GitHub runner) and does the same thing on iOS 26+.
+    if ([self.createButtonItem respondsToSelector:NSSelectorFromString(@"setSharesBackground:")]) {
+        [self.createButtonItem setValue:@NO forKey:@"sharesBackground"];
     }
 
     self.tableView = [[UITableView alloc] initWithFrame:CGRectZero style:UITableViewStyleInsetGrouped];

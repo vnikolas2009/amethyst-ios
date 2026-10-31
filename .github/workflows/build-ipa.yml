@@ -17,7 +17,8 @@ on:
         type: boolean
         default: false
   push:
-    branches: [ main ]
+    # Every branch, so a fix can be tested before it is merged into main.
+    branches: [ '**' ]
     paths-ignore:
       - '**.md'
       - '.github/ISSUE_TEMPLATE/**'
