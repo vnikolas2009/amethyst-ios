@@ -314,15 +314,10 @@
 
 // Check if the account has permission to download
 - (BOOL)checkAccessWithDialog:(BOOL)show {
-    // for now
-    BOOL accessible = [BaseAuthenticator.current.authData[@"username"] hasPrefix:@"Demo."] || BaseAuthenticator.current.authData[@"xboxGamertag"] != nil;
-    if (!accessible) {
-        [self.progress cancel];
-        if (show) {
-            [self finishDownloadWithErrorString:@"Minecraft can't be legally installed when logged in with a local account. Please switch to an online account to continue."];
-        }
-    }
-    return accessible;
+    // Offline accounts are the only account type in this build, so downloading is always allowed.
+    // Upstream refused every download unless the account was a Microsoft account (or a demo one),
+    // which made versions impossible to install after the Microsoft login was removed.
+    return YES;
 }
 
 // Check SHA of the file

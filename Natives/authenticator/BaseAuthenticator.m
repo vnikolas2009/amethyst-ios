@@ -29,11 +29,9 @@ static BaseAuthenticator *current = nil;
         return nil;
     }
 
-    if ([authData[@"expiresAt"] longValue] == 0) {
-        return [[LocalAuthenticator alloc] initWithData:authData];
-    } else { 
-        return [[MicrosoftAuthenticator alloc] initWithData:authData];
-    }
+    // Microsoft login was removed: every saved account is treated as an
+    // offline account, including old Microsoft account files left on disk.
+    return [[LocalAuthenticator alloc] initWithData:authData];
 }
 
 - (id)initWithData:(NSMutableDictionary *)data {

@@ -132,20 +132,8 @@ static void *ProgressObserverContext = &ProgressObserverContext;
         name:@"InstallModpack"
         object:nil];
 
-    if ([BaseAuthenticator.current isKindOfClass:MicrosoftAuthenticator.class]) {
-        // Perform token refreshment on startup
-        [self setInteractionEnabled:NO forDownloading:NO];
-        id callback = ^(id status, BOOL success) {
-            status = [status description];
-            self.progressText.text = status;
-            if (status == nil) {
-                [self setInteractionEnabled:YES forDownloading:NO];
-            } else if (!success) {
-                showDialog(localize(@"Error", nil), status);
-            }
-        };
-        [BaseAuthenticator.current refreshTokenWithCallback:callback];
-    }
+    // Previously a Microsoft token was refreshed here on startup.
+    // Offline accounts have no token, so nothing to do.
 }
 
 - (void)setViewControllers:(NSArray<UIViewController *> *)viewControllers animated:(BOOL)animated {
