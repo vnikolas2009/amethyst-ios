@@ -2,6 +2,7 @@
 #include <dlfcn.h>
 #include <errno.h>
 #include <libgen.h>
+#include <mach/mach.h> // task_set_exception_ports, mach_task_self (Xcode 16 rejects implicit declarations)
 #include <spawn.h>
 #include <stdio.h>
 #include <stdlib.h>
