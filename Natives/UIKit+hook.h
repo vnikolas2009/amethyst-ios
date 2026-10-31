@@ -20,7 +20,18 @@ extern NSNotificationName UIPresentationControllerPresentationTransitionWillBegi
 @end
 
 // private functions
-extern BOOL _UISolariumEnabled(void) __attribute__((weak_import));
+// _UISolariumEnabled() ("is Liquid Glass on") is private UIKit API that only appears in the iOS 26 SDK
+// stubs, so linking to it fails with older SDKs (Xcode 16 on the GitHub runner). Look it up while the
+// app runs instead: it is found on iOS 26+ and simply reported as "off" everywhere else.
+#include <dlfcn.h>
+static inline BOOL UISolariumEnabled(void) {
+    static BOOL (*function)(void) = NULL;
+    static dispatch_once_t once;
+    dispatch_once(&once, ^{
+        function = (BOOL (*)(void))dlsym(RTLD_DEFAULT, "_UISolariumEnabled");
+    });
+    return function != NULL && function();
+}
 
 @interface UIBarButtonItem(private)
 - (UIView *)view;
