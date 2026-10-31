@@ -141,9 +141,14 @@
             [self displayProgress:localize(@"login.jit.enabled", nil)];
             [self displayProgress:nil];
         } else if (@available(iOS 17.0, *)) {
-            // enabling JIT for 17.0+ is done when we actually launch the game
+            // enabling JIT for 17.0+ is done when we actually launch the game.
+            // Nothing happens here, so clear the "Checking for JIT" text and the spinner,
+            // otherwise they stayed on screen forever.
+            [self displayProgress:@""];
+            [self displayProgress:nil];
         } else {
             [self enableJITWithAltKit];
+            [self watchForJITEnabled];
         }
     } else if (!NSProcessInfo.processInfo.macCatalystApp && !getenv("SIMULATOR_DEVICE_NAME")) {
         [self displayProgress:localize(@"login.jit.fail", nil)];
@@ -345,6 +350,26 @@
     } else {
         self.toolbarItems[1].title = status;
     }
+}
+
+// iOS 16 and older: JIT can also be switched on from outside the app (SideStore, AltServer, Xcode...).
+// AltKit only reports its own result, so without this the "Checking for JIT" text and its
+// spinner stayed on screen whenever JIT was enabled any other way, or AltServer never answered.
+- (void)watchForJITEnabled {
+    __weak LauncherMenuViewController *weakSelf = self;
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        while (!isJITEnabled(false)) {
+            [NSThread sleepForTimeInterval:0.5];
+        }
+        dispatch_async(dispatch_get_main_queue(), ^{
+            LauncherMenuViewController *strongSelf = weakSelf;
+            if (strongSelf == nil) return;
+            NSLog(@"[JIT] JIT is now enabled");
+            [ALTServerManager.sharedManager stopDiscovering];
+            [strongSelf displayProgress:localize(@"login.jit.enabled", nil)];
+            [strongSelf displayProgress:nil];
+        });
+    });
 }
 
 - (void)enableJITWithAltKit {

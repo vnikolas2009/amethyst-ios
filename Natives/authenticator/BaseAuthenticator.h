@@ -9,7 +9,6 @@ typedef void(^Callback)(id status, BOOL success);
 @property NSMutableDictionary *authData;
 
 + (id)loadSavedName:(NSString *)name;
-+ (NSDictionary *)tokenDataOfProfile:(NSString *)profile;
 
 - (id)initWithInput:(NSString *)string;
 - (void)loginWithCallback:(Callback)callback;
@@ -18,11 +17,6 @@ typedef void(^Callback)(id status, BOOL success);
 
 @end
 
+// The only account type left: an offline account that is just a nickname.
 @interface LocalAuthenticator : BaseAuthenticator
-@end
-
-@interface MicrosoftAuthenticator : BaseAuthenticator
-
-+ (void)clearTokenDataOfProfile:(NSString *)profile;
-
 @end

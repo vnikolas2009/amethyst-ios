@@ -104,7 +104,6 @@ add_executable(AngelAuraAmethyst
 
   authenticator/BaseAuthenticator.m
   authenticator/LocalAuthenticator.m
-  authenticator/MicrosoftAuthenticator.m
 
   ctxbridges/gl_bridge.m
   ctxbridges/osm_bridge.m
