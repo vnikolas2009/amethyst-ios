@@ -98,11 +98,39 @@ UIEdgeInsets getDefaultSafeArea() {
 
 #pragma mark Java runtime
 
+// Saved preferences only get missing top-level keys filled in, so a runtime that was added to the app
+// later (like Java 25) never showed up for users who already had preferences. Register every runtime
+// that ships inside the app bundle.
+static void registerBundledJavaRuntimes(void) {
+    NSString *dir = [NSBundle.mainBundle.bundlePath stringByAppendingPathComponent:@"java_runtimes"];
+    NSArray *items = [NSFileManager.defaultManager contentsOfDirectoryAtPath:dir error:nil];
+    NSMutableDictionary *homes = [getPrefObject(@"java.java_homes") mutableCopy];
+    if (!homes) return;
+    BOOL changed = NO;
+    for (NSString *item in items) {
+        // java-25-openjdk -> 25
+        if (![item hasPrefix:@"java-"] || ![item hasSuffix:@"-openjdk"]) continue;
+        NSString *version = [[item substringFromIndex:5] stringByReplacingOccurrencesOfString:@"-openjdk" withString:@""];
+        if (version.intValue <= 0 || homes[version]) continue;
+        NSLog(@"[JavaLauncher] Registering bundled Java %@", version);
+        homes[version] = @"internal";
+        changed = YES;
+    }
+    if (changed) {
+        setPrefObject(@"java.java_homes", homes);
+    }
+}
+
 NSString* getSelectedJavaHome(NSString* defaultJRETag, int minVersion) {
+    registerBundledJavaRuntimes();
     NSDictionary *pref = getPrefObject(@"java.java_homes");
     NSDictionary<NSString *, NSString *> *selected = pref[@"0"];
     NSString *selectedVer = selected[defaultJRETag];
     if (minVersion > selectedVer.intValue) {
+        // The selected runtime is too old. Look for the oldest installed one that is new enough.
+        // (selectedVer must be cleared first, otherwise a failed search silently kept the old runtime
+        // and the game crashed with UnsupportedClassVersionError instead of reporting a missing Java.)
+        selectedVer = nil;
         NSArray *sortedVersions = [pref.allKeys valueForKeyPath:@"self.integerValue"];
         sortedVersions = [sortedVersions sortedArrayUsingSelector:@selector(compare:)];
         for (NSNumber *version in sortedVersions) {
